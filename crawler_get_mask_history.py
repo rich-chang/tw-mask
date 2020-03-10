@@ -23,7 +23,7 @@ start_date = '2020_02_06'
 log_foldername = 'crawler_mask_history_log'
 log_filename = 'crawler_mask_history_log.txt'
 
-if (len(sys.argv) > 1):
+if 'usb' in sys.argv:
     log_foldername = '/Volumes/32G/mask_record/crawler_mask_history_log'
 else:
     log_foldername = "crawler_mask_history_log"
@@ -80,7 +80,8 @@ def saveFileFromURl(foldername, filename):
 
             time_proc_2 = datetime.datetime.now()            
 
-            print(">>> Processed file <{0}> Esc time {1}".format(file_name, time_proc_2 - time_proc_1))
+            if 'debug' in sys.argv:
+                print(">>> Processed file <{0}> Esc time {1}".format(file_name, time_proc_2 - time_proc_1))
             
         except Exception as e:
             print(">>> Exception", e)
@@ -110,7 +111,7 @@ def job():
                 
                 results = soup.find_all('a', class_='js-navigation-open')
                 
-                for res in results:
+                for file_count, res in enumerate(results):
                     if '.log' in res.text:
                         
                         targetd_line = day.strftime('%Y_%m_%d') + '_' + res.text
@@ -119,17 +120,20 @@ def job():
     
                         #print(res.text)
                         saveFileFromURl(day.strftime('%Y_%m_%d'), res.text)
+
+                        if 'debug' not in sys.argv:
+                            if file_count%10 == 0:
+                                print(">>> Processed", file_count)
             
         count = count + 1
         day = day + datetime.timedelta(days=1)
         
-        
-        time_2 = datetime.datetime.now()
-        print ("END:", time_2.strftime(datetimeFormat))
-    
-        time_diff = time_2 - time_1
-        print("Total Job time Esc:", time_diff)
-        print("\r\n")
+    time_2 = datetime.datetime.now()
+    print ("END:", time_2.strftime(datetimeFormat))
+
+    time_diff = time_2 - time_1
+    print("Total Job time Esc:", time_diff)
+    print("\r\n")
         
 job()
 
