@@ -139,11 +139,11 @@ def job():
 
     time_diff = time_2 - time_1
     print("Total Job time Esc:", time_diff)
-    print("\r\n")
         
 job()
 
-schedule.every().day.at("04:30").do(job)
+#schedule.every().day.at("04:30").do(job)
+schedule.every().hour.do(job)
 
 while True:
 
