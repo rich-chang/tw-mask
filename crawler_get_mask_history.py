@@ -99,6 +99,8 @@ def job():
         if count >= 0: 
         
             print('[{0}]'.format(day.strftime('%Y_%m_%d')))
+
+            time_proc_day_start = datetime.datetime.now()
             
             #req_path = 'https://github.com/apan1121/taiwan_mask/tree/gh-pages/log/history/2020_03_10'
             req_path = 'https://github.com/apan1121/taiwan_mask/tree/gh-pages/log/history/{0}'.format(day.strftime('%Y_%m_%d'))
@@ -112,6 +114,7 @@ def job():
                 results = soup.find_all('a', class_='js-navigation-open')
                 
                 for file_count, res in enumerate(results):
+
                     if '.log' in res.text:
                         
                         targetd_line = day.strftime('%Y_%m_%d') + '_' + res.text
@@ -125,6 +128,9 @@ def job():
                             if file_count%10 == 0:
                                 print(">>> Processed", file_count)
             
+            time_proc_day_end = datetime.datetime.now()
+            print (">>> Processed day Esc", time_proc_day_end - time_proc_day_start)
+
         count = count + 1
         day = day + datetime.timedelta(days=1)
         
