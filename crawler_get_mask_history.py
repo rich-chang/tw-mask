@@ -54,15 +54,15 @@ def saveFileFromURl(foldername, filename):
     #download_url = https://raw.githubusercontent.com/apan1121/taiwan_mask/gh-pages/log/history/2020_03_10/01_03_41.log
     download_url = 'https://raw.githubusercontent.com/apan1121/taiwan_mask/gh-pages/log/history/{0}/{1}'.format(foldername, filename)
     #print(">>>", download_url)
+          
+    try:  
+        operUrl = request.urlopen(download_url)
+
+        if(operUrl.getcode()==200):
+
+            data = operUrl.read()
+            jsonData = json.loads(data)
             
-    operUrl = request.urlopen(download_url)
-
-    if(operUrl.getcode()==200):
-
-        data = operUrl.read()
-        jsonData = json.loads(data)
-        
-        try:
             path = '{0}/{1}'.format(log_foldername, foldername)
             
             if not os.path.exists(path):
@@ -82,63 +82,78 @@ def saveFileFromURl(foldername, filename):
 
             if 'debug' in sys.argv:
                 print(">>> Processed file <{0}> Esc time {1}".format(file_name, time_proc_2 - time_proc_1))
-            
-        except Exception as e:
-            print(">>> Exception", e)
+                
+    except Exception as e:
+        print(">>> Exception", e)
 
 def job():
 
-    time_1 = datetime.datetime.now()
-    print ("\r\nSTART:", time_1.strftime(datetimeFormat))
+    try:
 
-    day = datetime.datetime.strptime(start_date, '%Y_%m_%d')
+        time_1 = datetime.datetime.now()
+        print ("\r\nSTART:", time_1.strftime(datetimeFormat))
 
-    count = 0
-    while day < datetime.datetime.now():
-        
-        if count >= 0: 
-        
-            print('[{0}]'.format(day.strftime('%Y_%m_%d')))
+        day = datetime.datetime.strptime(start_date, '%Y_%m_%d')
 
-            time_proc_day_start = datetime.datetime.now()
+        count = 0
+        while day < datetime.datetime.now():
             
-            #req_path = 'https://github.com/apan1121/taiwan_mask/tree/gh-pages/log/history/2020_03_10'
-            req_path = 'https://github.com/apan1121/taiwan_mask/tree/gh-pages/log/history/{0}'.format(day.strftime('%Y_%m_%d'))
+            processed = False
+
+            if count >= 0:
             
-            req = requests.get(req_path)
-            
-            if req.status_code == requests.codes.ok:
+                print('[{0}]'.format(day.strftime('%Y_%m_%d')))
+
+                time_proc_day_start = datetime.datetime.now()
+                print(">>> Process one-day files START", time_proc_day_start.strftime(datetimeFormat))
                 
-                soup = BeautifulSoup(req.text, 'html.parser')
+                #req_path = 'https://github.com/apan1121/taiwan_mask/tree/gh-pages/log/history/2020_03_10'
+                req_path = 'https://github.com/apan1121/taiwan_mask/tree/gh-pages/log/history/{0}'.format(day.strftime('%Y_%m_%d'))
                 
-                results = soup.find_all('a', class_='js-navigation-open')
+                req = requests.get(req_path)
                 
-                for file_count, res in enumerate(results):
+                if req.status_code == requests.codes.ok:
+                    
+                    soup = BeautifulSoup(req.text, 'html.parser')
+                    
+                    results = soup.find_all('a', class_='js-navigation-open')
+                    
+                    for file_count, res in enumerate(results):
 
-                    if '.log' in res.text:
-                        
-                        targetd_line = day.strftime('%Y_%m_%d') + '_' + res.text
-                        if ifLineInFile(targetd_line):
-                            continue
-    
-                        #print(res.text)
-                        saveFileFromURl(day.strftime('%Y_%m_%d'), res.text)
+                        if '.log' in res.text:
+                            
+                            targetd_line = day.strftime('%Y_%m_%d') + '_' + res.text
+                            
+                            if ifLineInFile(targetd_line):
+                                continue
+                            else:
+                                #print(res.text)
+                                saveFileFromURl(day.strftime('%Y_%m_%d'), res.text)
 
-                        if 'debug' not in sys.argv:
-                            if file_count%10 == 0:
-                                print(">>> Processed", file_count)
+                                processed = True
+
+                                if 'debug' not in sys.argv:
+                                    if file_count%10 == 0:
+                                        print(">>> Processed", file_count)
+                
+                time_proc_day_end = datetime.datetime.now()
+                print(">>> Process one-day files END  ", time_proc_day_end.strftime(datetimeFormat))
+                print(">>> Process one-day files ESC  ", time_proc_day_end - time_proc_day_start)
+
+            count = count + 1
+            day = day + datetime.timedelta(days=1)
+
+            if processed:
+                time.sleep(300) #5 min   
             
-            time_proc_day_end = datetime.datetime.now()
-            print (">>> Processed day Esc", time_proc_day_end - time_proc_day_start)
+        time_2 = datetime.datetime.now()
+        print ("END:", time_2.strftime(datetimeFormat))
 
-        count = count + 1
-        day = day + datetime.timedelta(days=1)
-        
-    time_2 = datetime.datetime.now()
-    print ("END:", time_2.strftime(datetimeFormat))
+        time_diff = time_2 - time_1
+        print("Total Job time Esc:", time_diff)
 
-    time_diff = time_2 - time_1
-    print("Total Job time Esc:", time_diff)
+    except Exception as e:
+        print(">>> Exception", e)
         
 job()
 
