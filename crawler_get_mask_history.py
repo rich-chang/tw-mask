@@ -24,7 +24,8 @@ log_foldername = 'crawler_mask_history_log'
 log_filename = 'crawler_mask_history_log.txt'
 
 if 'usb' in sys.argv:
-    log_foldername = '/Volumes/32G/mask_record/crawler_mask_history_log'
+    #log_foldername = '/Volumes/32G/mask_record/crawler_mask_history_log'
+    log_foldername = 'D:\Workspace\Side Project\tw-mask-log_file'
 else:
     log_foldername = "crawler_mask_history_log"
 
